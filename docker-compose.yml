@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: mysql
+    env_file:
+      - .env
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_PASSWORD}
+      MYSQL_DATABASE: ${MYSQL_DATABASE}
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - ${MYSQL_PORT}:${MYSQL_CONTAINER_PORT}
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - spring_network
+  spring:
+    container_name: spring
+    env_file:
+      - .env
+    build: .
+    depends_on:
+      - mysql
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:mysql://mysql:${MYSQL_CONTAINER_PORT}/${MYSQL_DATABASE}
+      SPRING_DATASOURCE_USERNAME: ${MYSQL_USER}
+      SPRING_DATASOURCE_PASSWORD: ${MYSQL_PASSWORD}
+    ports:
+      - ${API_PORT}:${API_CONTAINER_PORT}
+    networks:
+      - spring_network
+volumes:
+  mysql_data:
+networks:
+  spring_network:
